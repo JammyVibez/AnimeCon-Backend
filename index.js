@@ -115,7 +115,8 @@ watcher.on("add", async (filePath) => {
 });
 
 const apiRoutes = require("./routes/api");
-app.use("/api", apiRoutes);
+app.use("/", apiRoutes);
+
 
 
 
