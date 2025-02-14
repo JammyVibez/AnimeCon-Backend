@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
 const cors = require("cors");
-app.use(cors({ origin: "https://animecon-frontend.vercel.app/" }));
+app.use(cors({ origin: "https://animecon-frontend.vercel.app", credentials: true }));
 
 app.use((req, res, next) => {
   res.set("Cache-Control", "no-cache, no-store, must-revalidate");
