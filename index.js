@@ -121,7 +121,7 @@ app.use("/", apiRoutes);
 
 
 // Start the server
-const PORT = 8800;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, async () => {
   await connectDB();
   console.log(`Backend Server is running on port ${PORT}`);
