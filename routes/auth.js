@@ -4,22 +4,6 @@ const bcrypt = require("bcryptjs");
 
 
 
-// // Function to generate tagname
-// const  generateTagname = async (username) => {
-//   let isUnique = false;
-//   let uniqueTag;
-
-//   while (!isUnique) {
-//     const randomSuffix = Math.floor(1000 + Math.random() * 9000); 
-//     uniqueTag =`${username}${randomSuffix}`;
-
-//     const existingUser = await User.findOne({ tagname: uniqueTag});
-//     if (!existingUser) {
-//       isUnique = true;
-//     }
-//   }
-//   return uniqueTag;
-// };
 
 // REGISTER
 router.post("/register", async (req, res) => {
