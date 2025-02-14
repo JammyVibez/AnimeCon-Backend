@@ -9,7 +9,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.0",
     "chokidar": "^4.0.1",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
@@ -22,5 +22,11 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemon": "^3.1.7",
     "path": "^0.12.7"
-  }
+  },
+  
+  "engines": {
+  "node": "20.x"
 }
+
+}
+
