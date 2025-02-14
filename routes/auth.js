@@ -3,6 +3,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 
 
+
 // // Function to generate tagname
 // const  generateTagname = async (username) => {
 //   let isUnique = false;
