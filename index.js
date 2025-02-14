@@ -33,7 +33,9 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
-app.use(cors());
+const cors = require("cors");
+app.use(cors({ origin: "https://animecon-frontend.vercel.app/" }));
+
 app.use((req, res, next) => {
   res.set("Cache-Control", "no-cache, no-store, must-revalidate");
   res.set("Pragma", "no-cache");
