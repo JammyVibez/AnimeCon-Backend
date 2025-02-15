@@ -18,12 +18,7 @@ const authRoute = require("./routes/auth");
 const postRoute = require("./routes/posts");
 const searchRoute = require("./routes/search");
 
-app.use("/api/messages", messageRoute);
-app.use("/api/conversations", conversationRoute);
-app.use("/api/users", userRoute);
-app.use("/api/auth", authRoute);
-app.use("/api/posts", postRoute);
-app.use("/api/search", searchRoute);
+
 
 
 // Initialize dotenv for environment variables
@@ -118,7 +113,12 @@ watcher.on("add", async (filePath) => {
   }
 });
 
-
+app.use("/api/messages", messageRoute);
+app.use("/api/conversations", conversationRoute);
+app.use("/api/users", userRoute);
+app.use("/api/auth", authRoute);
+app.use("/api/posts", postRoute);
+app.use("/api/search", searchRoute);
 
 
 
