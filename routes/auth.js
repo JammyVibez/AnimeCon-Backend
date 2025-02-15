@@ -33,24 +33,20 @@ router.post("/register", async (req, res) => {
 
 // LOGIN
 router.post("/login", async (req, res) => {
-    try {
-        // Find user by email
-        const user = await User.findOne({ email: req.body.email });
-        if (!user) {
-            return res.status(404).json("User not found"); // Added return
-        }
+  try {
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) return res.status(404).json("User not found");
 
-        // Validate password
-        const validPassword = await bcrypt.compare(req.body.password, user.password);
-        if (!validPassword) {
-            return res.status(400).json("Incorrect password"); // Added return
-        }
+      const validPassword = await bcrypt.compare(req.body.password, user.password);
+      if (!validPassword) return res.status(400).json("Incorrect password");
 
-        // Respond with user details
-        return res.status(200).json(user); // Added return
-    } catch (err) {
-        return res.status(500).json(err); // Added return
-    }
+      // Add `id` field to the response object
+      const userData = { ...user._doc, id: user._id }; 
+
+      return res.status(200).json(userData); // Send user data with `id`
+  } catch (err) {
+      return res.status(500).json(err);
+  }
 });
 
 
