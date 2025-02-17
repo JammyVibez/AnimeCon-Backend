@@ -26,10 +26,11 @@ dotenv.config();
 
 // Initialize Express app
 const app = express();
+app.use(express.json());
 app.use(bodyParser.json());
 
 // Middleware
-app.use(express.json());
+
 app.use(helmet());
 app.use(morgan("common"));
 app.use(cors({ origin: "https://animecon-frontend.vercel.app", credentials: true }));
