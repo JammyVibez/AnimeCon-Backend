@@ -9,122 +9,66 @@ const { updateRankAndLevel } = require('../utils/utils');
 
 
 
+
+
 // Multer setup for file uploads
-// Multer storage configuration
+// Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = "upload/temp"; // Temporary directory for uploads
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    const dir = "upload/temp";
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: (req, file, cb) => {
     cb(null, req.body.name || Date.now() + path.extname(file.originalname));
   },
 });
-
 const upload = multer({ storage });
 
-// Helper function to validate file types
-const validateFile = (filePath) => {
-  const allowedExtensions = [".jpg", ".jpeg", ".png"];
-  const ext = path.extname(filePath).toLowerCase();
-  return allowedExtensions.includes(ext);
-};
-
-// Retry upload logic for Cloudinary
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const validateFile = (filePath) => [".jpg", ".jpeg", ".png"].includes(path.extname(filePath).toLowerCase());
 
 const retryUpload = async (filePath, folder, retries = 3) => {
-  for (let attempt = 1; attempt <= retries; attempt++) {
+  for (let i = 0; i < retries; i++) {
     try {
-      const result = await cloudinary.uploader.upload(filePath, { folder });
-      console.log(`Upload successful: ${result.secure_url}`);
-      return result.secure_url;
-    } catch (error) {
-      console.error(`Retrying upload (${attempt}/${retries})...`, error.message);
-      if (attempt === retries) throw error;
-      await sleep(2000);
+      return (await cloudinary.uploader.upload(filePath, { folder })).secure_url;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, 2000));
     }
   }
 };
 
-
-
-
-// Route to update profile picture
+// Update Profile Picture
 router.put("/update-profilePicture/:id", upload.single("profilePicture"), async (req, res) => {
   try {
-    const file = req.file;
-
-    if (!file) return res.status(400).json({ error: "No file uploaded" });
-
-    if (!validateFile(file.path)) {
-      return res.status(400).json({ error: "Invalid file format. Allowed: JPG, JPEG, PNG" });
-    }
-
-    // Attempt upload to Cloudinary
-    const result = await retryUpload(file.path, "profile_pictures");
-
-    if (!result) return res.status(500).json({ error: "Failed to upload image to Cloudinary" });
-
-    // Update the user's profile picture
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { profilePicture: result },
-      { new: true }
-    );
-
-    if (!updatedUser) return res.status(404).json({ error: "User not found" });
-
-    if (fs.existsSync(file.path)) fs.unlinkSync(file.path); // Clean up temporary file
-
-    return res.status(200).json(updatedUser);
+    if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
+    const result = await retryUpload(req.file.path, "profile_pictures");
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    user.profilePicture = result;
+    await user.save();
+    fs.unlinkSync(req.file.path);
+    res.status(200).json(user);
   } catch (err) {
-    console.error("Error updating profile picture:", err.message);
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-
-// Route to update cover picture
+// Update Cover Picture
 router.put("/update-coverPicture/:id", upload.single("coverPicture"), async (req, res) => {
   try {
-    const file = req.file;
-    if (!file) return res.status(400).json({ error: "No file uploaded" });
-
-    if (!validateFile(file.path)) {
-      return res.status(400).json({ error: "Invalid file format" });
-    }
-
-    let result;
-    try {
-      result = await retryUpload(file.path, "cover_pictures");
-    } catch (cloudinaryErr) {
-      return res.status(500).json({ error: "File upload to Cloudinary failed", details: cloudinaryErr.message });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { coverPicture: result },
-      { new: true }
-    );
-
-    console.log("Updated user in database:", updatedUser);
-
-    if (!updatedUser) return res.status(404).json({ error: "User not found" });
-
-    if (fs.existsSync(file.path)) fs.unlinkSync(file.path); // Remove local file
-
-    res.status(200).json(updatedUser);
+    if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
+    const result = await retryUpload(req.file.path, "cover_pictures");
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    user.coverPicture = result;
+    await user.save();
+    fs.unlinkSync(req.file.path);
+    res.status(200).json(user);
   } catch (err) {
-    console.error("Error updating cover picture:", err.message);
-    res.status(500).json({ error: "Cover picture update failed", details: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
-
-
 
 
 
