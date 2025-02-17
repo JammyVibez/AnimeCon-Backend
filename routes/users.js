@@ -11,64 +11,64 @@ const { updateRankAndLevel } = require('../utils/utils');
 
 
 
-// Multer setup for file uploads
-// Multer setup
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = "upload/temp";
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, req.body.name || Date.now() + path.extname(file.originalname));
-  },
-});
-const upload = multer({ storage });
+// // Multer setup for file uploads
+// // Multer setup
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     const dir = "upload/temp";
+//     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+//     cb(null, dir);
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, req.body.name || Date.now() + path.extname(file.originalname));
+//   },
+// });
+// const upload = multer({ storage });
 
-const validateFile = (filePath) => [".jpg", ".jpeg", ".png"].includes(path.extname(filePath).toLowerCase());
+// const validateFile = (filePath) => [".jpg", ".jpeg", ".png"].includes(path.extname(filePath).toLowerCase());
 
-const retryUpload = async (filePath, folder, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return (await cloudinary.uploader.upload(filePath, { folder })).secure_url;
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise(r => setTimeout(r, 2000));
-    }
-  }
-};
+// const retryUpload = async (filePath, folder, retries = 3) => {
+//   for (let i = 0; i < retries; i++) {
+//     try {
+//       return (await cloudinary.uploader.upload(filePath, { folder })).secure_url;
+//     } catch (err) {
+//       if (i === retries - 1) throw err;
+//       await new Promise(r => setTimeout(r, 2000));
+//     }
+//   }
+// };
 
-// Update Profile Picture
-router.put("/update-profilePicture/:id", upload.single("profilePicture"), async (req, res) => {
-  try {
-    if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
-    const result = await retryUpload(req.file.path, "profile_pictures");
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    user.profilePicture = result;
-    await user.save();
-    fs.unlinkSync(req.file.path);
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// // Update Profile Picture
+// router.put("/update-profilePicture/:id", upload.single("profilePicture"), async (req, res) => {
+//   try {
+//     if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
+//     const result = await retryUpload(req.file.path, "profile_pictures");
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ error: "User not found" });
+//     user.profilePicture = result;
+//     await user.save();
+//     fs.unlinkSync(req.file.path);
+//     res.status(200).json(user);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
-// Update Cover Picture
-router.put("/update-coverPicture/:id", upload.single("coverPicture"), async (req, res) => {
-  try {
-    if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
-    const result = await retryUpload(req.file.path, "cover_pictures");
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    user.coverPicture = result;
-    await user.save();
-    fs.unlinkSync(req.file.path);
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// // Update Cover Picture
+// router.put("/update-coverPicture/:id", upload.single("coverPicture"), async (req, res) => {
+//   try {
+//     if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
+//     const result = await retryUpload(req.file.path, "cover_pictures");
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ error: "User not found" });
+//     user.coverPicture = result;
+//     await user.save();
+//     fs.unlinkSync(req.file.path);
+//     res.status(200).json(user);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 
 
