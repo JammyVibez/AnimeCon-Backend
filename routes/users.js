@@ -39,35 +39,34 @@ const retryUpload = async (filePath, folder, retries = 3) => {
   }
 };
 
-// Update Profile Picture
 router.put("/update-profilePicture/:id", upload.single("profilePicture"), async (req, res) => {
   try {
-    console.log("Received request to update profile picture for user:", req.params.id);
-    
-    if (!req.file || !validateFile(req.file.path)) {
-      console.log("Invalid file upload:", req.file);
-      return res.status(400).json({ error: "Invalid file" });
-    }
-    
+    if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
+
     const result = await retryUpload(req.file.path, "profile_pictures");
-    console.log("Cloudinary upload result:", result);
-    
+    console.log("Cloudinary URL:", result); // Debugging
+
     const user = await User.findById(req.params.id);
-    if (!user) {
-      console.log("User not found:", req.params.id);
-      return res.status(404).json({ error: "User not found" });
-    }
-    
-    console.log("User before update:", user);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
     user.profilePicture = result;
+    console.log("Before Saving:", user); // Debugging
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { profilePicture: result },
+      { new: true } // This ensures the updated user is returned
+    );
+    console.log("Updated User:", updatedUser);
+    res.status(200).json(updatedUser);
     
-    await user.save();
-    console.log("User updated successfully:", user);
     
+    console.log("After Saving:", user); // Debugging
+
     fs.unlinkSync(req.file.path);
-    res.status(200).json(user);
+    res.status(200).json({ message: "Profile updated successfully", user });
   } catch (err) {
-    console.error("Error updating profile picture:", err);
+    console.error("Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
