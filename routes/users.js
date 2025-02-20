@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const mongoose = require("mongoose");
 const cloudinary = require("cloudinary").v2;
 const { updateRankAndLevel } = require('../utils/utils');
 
@@ -41,18 +42,36 @@ const retryUpload = async (filePath, folder, retries = 3) => {
 // Update Profile Picture
 router.put("/update-profilePicture/:id", upload.single("profilePicture"), async (req, res) => {
   try {
-    if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
+    console.log("Received request to update profile picture for user:", req.params.id);
+    
+    if (!req.file || !validateFile(req.file.path)) {
+      console.log("Invalid file upload:", req.file);
+      return res.status(400).json({ error: "Invalid file" });
+    }
+    
     const result = await retryUpload(req.file.path, "profile_pictures");
+    console.log("Cloudinary upload result:", result);
+    
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      console.log("User not found:", req.params.id);
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    console.log("User before update:", user);
     user.profilePicture = result;
+    
     await user.save();
+    console.log("User updated successfully:", user);
+    
     fs.unlinkSync(req.file.path);
     res.status(200).json(user);
   } catch (err) {
+    console.error("Error updating profile picture:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Update Cover Picture
 router.put("/update-coverPicture/:id", upload.single("coverPicture"), async (req, res) => {
