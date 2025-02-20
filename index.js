@@ -34,10 +34,11 @@ app.use(bodyParser.json());
 app.use(helmet());
 app.use(morgan("common"));
 // Allow requests from your frontend
+
 const corsOptions = {
-  origin: "https://animecon-frontend.vercel.app", // Your frontend URL
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization"
+  origin: "https://animecon-frontend.vercel.app", // Allow frontend domain
+  methods: "GET, POST, PUT, DELETE",
+  allowedHeaders: "Content-Type, Authorization, cache-control"
 };
 
 // Use CORS middleware
