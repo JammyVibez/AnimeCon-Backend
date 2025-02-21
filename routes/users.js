@@ -75,18 +75,39 @@ router.put("/update-profilePicture/:id", upload.single("profilePicture"), async 
 // Update Cover Picture
 router.put("/update-coverPicture/:id", upload.single("coverPicture"), async (req, res) => {
   try {
-    if (!req.file || !validateFile(req.file.path)) return res.status(400).json({ error: "Invalid file" });
+    if (!req.file || !validateFile(req.file.path)) 
+      return res.status(400).json({ error: "Invalid file" });
+
+    // Upload to Cloudinary
     const result = await retryUpload(req.file.path, "cover_pictures");
+    console.log("Cloudinary URL:", result);
+
+    // Find user by ID
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Update cover picture
     user.coverPicture = result;
-    await user.save();
+
+    // Save changes
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { coverPicture: result },
+      { new: true }
+    );
+
+    console.log("Updated User:", updatedUser);
+
+    // Remove uploaded file from server
     fs.unlinkSync(req.file.path);
-    res.status(200).json(user);
+
+    res.status(200).json({ message: "Cover picture updated successfully", user: updatedUser });
   } catch (err) {
+    console.error("Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 
